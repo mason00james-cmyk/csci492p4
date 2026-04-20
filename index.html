@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Project 4: Generative Models — VAE & DCGAN</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: #1a1a2e;
+      color: #e0e0e0;
+      font-family: Georgia, 'Times New Roman', serif;
+      font-size: 16px;
+      line-height: 1.7;
+    }
+
+    .page {
+      max-width: 780px;
+      margin: 0 auto;
+      background: #1e1e2e;
+      min-height: 100vh;
+      padding: 48px 48px 80px;
+    }
+
+    /* ── Header ── */
+    h1 {
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 2.2rem;
+      font-weight: 900;
+      color: #ffffff;
+      line-height: 1.2;
+      margin-bottom: 12px;
+    }
+
+    .byline {
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 0.88rem;
+      color: #888;
+      margin-bottom: 32px;
+    }
+    .byline span { margin: 0 6px; }
+
+    hr {
+      border: none;
+      border-top: 1px solid #333;
+      margin: 32px 0;
+    }
+
+    /* ── Section headings ── */
+    h2 {
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: #ffffff;
+      margin: 28px 0 10px;
+    }
+
+    h3 {
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: #cccccc;
+      margin: 22px 0 8px;
+    }
+
+    /* ── Body text ── */
+    p {
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 0.92rem;
+      color: #cccccc;
+      margin-bottom: 12px;
+      line-height: 1.75;
+    }
+
+    /* ── Bullet lists ── */
+    ul {
+      margin: 8px 0 16px 20px;
+    }
+    ul li {
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 0.92rem;
+      color: #cccccc;
+      margin-bottom: 6px;
+      line-height: 1.65;
+    }
+    ul li em {
+      font-style: italic;
+      color: #aac4ff;
+    }
+
+    /* ── Dark highlight box (like "Vocab size: 28...") ── */
+    .highlight-box {
+      background: #111122;
+      border: 1px solid #333;
+      padding: 14px 20px;
+      margin: 16px 0;
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: #e0e0e0;
+    }
+
+    /* ── Images ── */
+    .img-block {
+      margin: 20px 0;
+    }
+    .img-block img {
+      width: 100%;
+      display: block;
+      border: 1px solid #333;
+    }
+    .img-caption {
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 0.78rem;
+      color: #777;
+      margin-top: 6px;
+      font-style: italic;
+    }
+
+    .img-row {
+      display: grid;
+      gap: 12px;
+      margin: 20px 0;
+    }
+    .img-row.cols-2 { grid-template-columns: 1fr 1fr; }
+    .img-row.cols-3 { grid-template-columns: 1fr 1fr 1fr; }
+    .img-row .img-block { margin: 0; }
+    .img-row img {
+      width: 100%;
+      border: 1px solid #333;
+      display: block;
+    }
+
+    /* ── Table ── */
+    .table-wrap { overflow-x: auto; margin: 16px 0; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 0.83rem;
+    }
+    th {
+      background: #111122;
+      color: #aaa;
+      padding: 8px 14px;
+      text-align: left;
+      border: 1px solid #333;
+      font-weight: 700;
+    }
+    td {
+      padding: 7px 14px;
+      border: 1px solid #2a2a3e;
+      color: #ccc;
+    }
+    tr:nth-child(even) td { background: #16162a; }
+
+    /* ── Code ── */
+    code {
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 0.82rem;
+      background: #111122;
+      padding: 1px 5px;
+      color: #aac4ff;
+    }
+    pre {
+      background: #111122;
+      border: 1px solid #333;
+      padding: 14px 18px;
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 0.8rem;
+      color: #aac4ff;
+      overflow-x: auto;
+      margin: 12px 0;
+      line-height: 1.6;
+    }
+
+    /* ── Part label ── */
+    .part-label {
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 1.15rem;
+      font-weight: 900;
+      color: #ffffff;
+      margin: 0 0 10px;
+    }
+  </style>
+</head>
+<body>
+<div class="page">
+
+  <!-- ── HEADER ── -->
+  <h1>Project 4: Generative Models — VAE &amp; DCGAN</h1>
+  <div class="byline">
+    Mason James <span>·</span> MNIST &amp; Pokémon Dataset <span>·</span> April 2026
+  </div>
+
+  <hr/>
+
+  <!-- ── OBJECTIVE ── -->
+  <h2>Objective</h2>
+  <ul>
+    <li>Implement a basic Autoencoder and Variational Autoencoder (VAE) trained on MNIST to understand latent space structure and generation.</li>
+    <li>Implement a Deep Convolutional GAN (DCGAN) trained on the Pokémon dataset to generate 64×64 RGB images.</li>
+    <li>Analyze training dynamics, compare architectural choices, and visualize outputs for each model.</li>
+  </ul>
+
+  <h2>Dataset &amp; Setup</h2>
+  <ul>
+    <li>Part 1: MNIST — 60,000 grayscale 28×28 handwritten digit images.</li>
+    <li>Part 2: Pokémon dataset — 1,638 RGB images, resized to 64×64.</li>
+    <li>All models trained on NVIDIA GPU using CUDA.</li>
+    <li>Framework: PyTorch with torchvision.</li>
+  </ul>
+  <div class="highlight-box">
+    Part 1: MNIST &nbsp;|&nbsp; 60,000 train images &nbsp;|&nbsp; Latent dims: 2, 8, 32 &nbsp;&nbsp;||&nbsp;&nbsp; Part 2: Pokémon &nbsp;|&nbsp; 1,638 images &nbsp;|&nbsp; 64×64 RGB
+  </div>
+
+  <hr/>
+
+  <!-- ── PART 1 AUTOENCODER ── -->
+  <div class="part-label">Part 1: Autoencoder &amp; VAE (MNIST)</div>
+
+  <h2>Task 1 — Basic Autoencoder</h2>
+  <p>A fully connected autoencoder was implemented and trained on MNIST using three latent dimensionalities: 2, 8, and 32. The encoder compresses the 784-dim flattened input to a latent vector; the decoder reconstructs the original from it.</p>
+  <ul>
+    <li>Encoder: <code>784 → 256 → ReLU → latent_dim</code></li>
+    <li>Decoder: <code>latent_dim → 256 → ReLU → 784 → Sigmoid</code></li>
+    <li>Loss: Binary Cross-Entropy (BCE)</li>
+    <li>Optimizer: Adam, lr=1e-3, 20 epochs</li>
+  </ul>
+
+  <h3>Reconstruction Results</h3>
+  <p>Top row = original input, bottom row = reconstruction. As latent dimensionality increases, reconstruction fidelity improves significantly.</p>
+
+  <p><strong>latent_dim = 2</strong> — Blurry and imprecise. Only 2 values must encode all digit variation, so fine stroke detail is lost. Rough shapes are preserved but characters are hard to read.</p>
+  <div class="img-block">
+    <img src="outputs/ae/reconstruction_latent2.png" alt="AE Reconstruction latent=2"/>
+    <div class="img-caption">Fig 1. AE Reconstruction with latent_dim=2.</div>
+  </div>
+
+  <p><strong>latent_dim = 8</strong> — Noticeably sharper. Stroke thickness and digit curvature are preserved well across most examples.</p>
+  <div class="img-block">
+    <img src="outputs/ae/reconstruction_latent8.png" alt="AE Reconstruction latent=8"/>
+    <div class="img-caption">Fig 2. AE Reconstruction with latent_dim=8.</div>
+  </div>
+
+  <p><strong>latent_dim = 32</strong> — Near-perfect. Reconstructions are almost indistinguishable from originals, with fine pen strokes faithfully reproduced.</p>
+  <div class="img-block">
+    <img src="outputs/ae/reconstruction_latent32.png" alt="AE Reconstruction latent=32"/>
+    <div class="img-caption">Fig 3. AE Reconstruction with latent_dim=32.</div>
+  </div>
+
+  <h3>Training Loss</h3>
+  <div class="img-block">
+    <img src="outputs/ae/loss_curves.png" alt="AE Loss Curves"/>
+    <div class="img-caption">Fig 4. BCE training loss over 20 epochs for latent dims 2, 8, and 32. All models converge quickly within the first 2–3 epochs and plateau.</div>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Latent Dim</th><th>Final BCE Loss</th><th>Reconstruction Quality</th></tr></thead>
+      <tbody>
+        <tr><td>2</td><td>0.1810</td><td>Blurry — rough shapes only</td></tr>
+        <tr><td>8</td><td>0.1165</td><td>Sharp — strokes and curves preserved</td></tr>
+        <tr><td>32</td><td>0.0772</td><td>Near-perfect reconstruction</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>Random Sampling from AE Latent Space</h3>
+  <p>To test whether the latent space supports generation, random vectors were sampled from N(0,I) and decoded. This reveals a fundamental limitation of standard autoencoders.</p>
+
+  <div class="img-row cols-2">
+    <div class="img-block">
+      <img src="outputs/ae/samples_latent8.png" alt="AE Samples latent=8"/>
+      <div class="img-caption">Fig 5. Random samples, latent_dim=8. Noisy and unrecognizable.</div>
+    </div>
+    <div class="img-block">
+      <img src="outputs/ae/samples_latent32.png" alt="AE Samples latent=32"/>
+      <div class="img-caption">Fig 6. Random samples, latent_dim=32. Even worse — larger space means random points are less likely to land anywhere meaningful.</div>
+    </div>
+  </div>
+
+  <div class="highlight-box">
+    Finding: Both grids produce noisy, unrecognizable outputs. The AE imposes no structure on its latent space — it only learns to compress/decompress training data. Random points almost certainly fall in regions the decoder has never seen. Notably, latent_dim=32 looks worse than dim=8: with more dimensions, training data is spread across a larger, sparser space. This directly motivates the VAE.
+  </div>
+
+  <hr/>
+
+  <h2>Task 2 — Variational Autoencoder (VAE)</h2>
+  <p>A VAE adds a probabilistic bottleneck — the encoder outputs a distribution (μ, σ²) instead of a single point. The reparameterization trick allows gradients to flow through the sampling step. KL divergence regularizes the latent space toward N(0,I), enabling generation.</p>
+  <ul>
+    <li>Encoder: <code>784 → 256 → μ (dim 2), log σ² (dim 2)</code></li>
+    <li>Reparameterization: <code>z = μ + ε·σ</code>, where <code>ε ~ N(0,I)</code></li>
+    <li>Decoder: <code>z → 256 → 784 → Sigmoid</code></li>
+    <li>Loss: ELBO = BCE(x_recon, x) + KL( N(μ,σ²) ‖ N(0,I) )</li>
+  </ul>
+
+  <h3>Training Loss</h3>
+  <div class="img-block">
+    <img src="outputs/vae/loss_curves.png" alt="VAE Loss Curves"/>
+    <div class="img-caption">Fig 7. VAE training loss — Total ELBO, BCE reconstruction, and KL divergence over 20 epochs.</div>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Epoch</th><th>Total ELBO</th><th>BCE</th><th>KL</th></tr></thead>
+      <tbody>
+        <tr><td>5</td><td>159.82</td><td>154.40</td><td>5.43</td></tr>
+        <tr><td>10</td><td>155.02</td><td>149.34</td><td>5.68</td></tr>
+        <tr><td>15</td><td>152.62</td><td>146.76</td><td>5.86</td></tr>
+        <tr><td>20</td><td>150.81</td><td>144.87</td><td>5.94</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>BCE steadily decreases as reconstruction improves. KL gradually increases as the encoder learns a more expressive posterior — using more of the available latent space while still staying close to the prior.</p>
+
+  <h3>Random Samples</h3>
+  <div class="img-block">
+    <img src="outputs/vae/samples_latent2.png" alt="VAE Samples"/>
+    <div class="img-caption">Fig 8. 64 random samples decoded from z ~ N(0,I). All produce clear, recognizable digits — a direct result of KL regularization structuring the latent space.</div>
+  </div>
+
+  <h3>Latent Space Grid Visualization</h3>
+  <p>A 2D grid was swept over the latent space and each point decoded to visualize how the VAE organizes digit classes spatially. Two ranges were tested: ±1.0 (high-density region) and ±5.0 (tail regions).</p>
+
+  <div class="img-row cols-2">
+    <div class="img-block">
+      <img src="outputs/vae/latent_grid_1p0.png" alt="VAE Latent Grid ±1.0"/>
+      <div class="img-caption">Fig 9. Latent grid, range ±1.0 — smooth transitions between recognizable digit classes throughout.</div>
+    </div>
+    <div class="img-block">
+      <img src="outputs/vae/latent_grid_5p0.png" alt="VAE Latent Grid ±5.0"/>
+      <div class="img-caption">Fig 10. Latent grid, range ±5.0 — center stays sharp; extreme edges become blurry/distorted.</div>
+    </div>
+  </div>
+
+  <div class="highlight-box">
+    Finding: At ±1.0, the grid shows smooth continuous transitions between digit classes (8→5→3→2→6 etc.) — the space is well-organized and continuous. At ±5.0, digits near the center remain clear but extreme values produce distorted shapes since training data never mapped to those regions. This spatial organization of digit classes emerges purely from the ELBO objective with no class labels.
+  </div>
+
+  <hr/>
+
+  <!-- ── PART 2 DCGAN ── -->
+  <div class="part-label">Part 2: Deep Convolutional GAN (DCGAN)</div>
+
+  <h2>Task 1 — Architecture &amp; Implementation</h2>
+  <p>A DCGAN was implemented and trained on 1,638 Pokémon images to generate 64×64 RGB images. The generator maps a 100-dim noise vector to an image via transposed convolutions; the discriminator uses strided convolutions to classify real vs. fake.</p>
+
+  <h3>Generator</h3>
+  <ul>
+    <li>Input: noise vector z ∈ ℝ¹⁰⁰</li>
+    <li>5 transposed conv blocks: <code>ConvTranspose2d → BatchNorm → ReLU</code></li>
+    <li>Output: 64×64 RGB image with <code>Tanh</code> activation (range [−1, 1])</li>
+    <li>Channel progression: 100 → 512 → 256 → 128 → 64 → 3</li>
+  </ul>
+
+  <h3>Discriminator</h3>
+  <ul>
+    <li>Input: 64×64 RGB image</li>
+    <li>4 conv blocks: <code>Conv2d → BatchNorm → LeakyReLU(0.2)</code></li>
+    <li>Output: real/fake scalar via <code>Sigmoid</code></li>
+    <li>Channel progression: 3 → 64 → 128 → 256 → 512 → 1</li>
+  </ul>
+
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Hyperparameter</th><th>Value</th></tr></thead>
+      <tbody>
+        <tr><td>Dataset size</td><td>1,638 Pokémon images</td></tr>
+        <tr><td>Image size</td><td>64×64 RGB</td></tr>
+        <tr><td>Optimizer</td><td>Adam, lr=2e-4, β₁=0.5</td></tr>
+        <tr><td>Epochs</td><td>50</td></tr>
+        <tr><td>Batch size</td><td>64</td></tr>
+        <tr><td>Noise dimension</td><td>100</td></tr>
+        <tr><td>Weight init</td><td>N(0, 0.02)</td></tr>
+        <tr><td>Loss</td><td>Binary Cross-Entropy</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>Training Progression — ReLU Discriminator</h3>
+  <div class="img-block">
+    <img src="outputs/dcgan/progression_relu.png" alt="DCGAN ReLU Progression"/>
+    <div class="img-caption">Fig 11. Generated samples at epochs 1, 5, 10, 20, 30, 40, 50 (ReLU discriminator). From random noise → color blobs → structured Pokémon-like shapes.</div>
+  </div>
+
+  <div class="img-row cols-3">
+    <div class="img-block">
+      <img src="outputs/dcgan/samples/relu_epoch030.png" alt="Epoch 30"/>
+      <div class="img-caption">Fig 12. Epoch 30 — color and shape structure emerging.</div>
+    </div>
+    <div class="img-block">
+      <img src="outputs/dcgan/samples/relu_epoch045.png" alt="Epoch 45"/>
+      <div class="img-caption">Fig 13. Epoch 45 — more defined forms.</div>
+    </div>
+    <div class="img-block">
+      <img src="outputs/dcgan/samples/relu_epoch050.png" alt="Epoch 50"/>
+      <div class="img-caption">Fig 14. Epoch 50 — Pokémon-like colors and silhouettes.</div>
+    </div>
+  </div>
+
+  <hr/>
+
+  <h2>Task 2 — LeakyReLU vs ReLU in Discriminator</h2>
+  <p>The DCGAN paper recommends LeakyReLU in the discriminator to avoid dead neurons and improve gradient flow. We compare both to analyze the effect on training stability and image quality on this small dataset.</p>
+
+  <h3>Loss Curves</h3>
+  <div class="img-block">
+    <img src="outputs/dcgan/loss_comparison.png" alt="Loss Comparison"/>
+    <div class="img-caption">Fig 15. Side-by-side loss curves. LeakyReLU (left): discriminator collapses immediately, generator flatlines. ReLU (right): losses stabilize into a healthy adversarial equilibrium.</div>
+  </div>
+
+  <div class="img-row cols-2">
+    <div class="img-block">
+      <img src="outputs/dcgan/loss_curves_leaky.png" alt="Leaky Loss"/>
+      <div class="img-caption">Fig 16. LeakyReLU — D loss → ~0, G loss → ~44 and never recovers.</div>
+    </div>
+    <div class="img-block">
+      <img src="outputs/dcgan/loss_curves_relu.png" alt="ReLU Loss"/>
+      <div class="img-caption">Fig 17. ReLU — initial spike then convergence to stable equilibrium around epoch 18.</div>
+    </div>
+  </div>
+
+  <h3>Visual Comparison</h3>
+  <div class="img-row cols-2">
+    <div class="img-block">
+      <img src="outputs/dcgan/progression_leaky.png" alt="Leaky Progression"/>
+      <div class="img-caption">Fig 18. LeakyReLU progression — uniform gray noise from epoch 1 through 50. Complete mode collapse.</div>
+    </div>
+    <div class="img-block">
+      <img src="outputs/dcgan/progression_relu.png" alt="ReLU Progression"/>
+      <div class="img-caption">Fig 19. ReLU progression — gradual improvement from noise to structured Pokémon imagery.</div>
+    </div>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Setting</th><th>D Loss (final)</th><th>G Loss (final)</th><th>Stability</th><th>Image Quality</th></tr></thead>
+      <tbody>
+        <tr><td>LeakyReLU</td><td>~0.0000</td><td>~44.0</td><td>❌ Collapsed</td><td>Gray noise — failed</td></tr>
+        <tr><td>ReLU</td><td>~0.3–0.6</td><td>~4.0–5.0</td><td>✅ Stable</td><td>Pokémon-like shapes</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="highlight-box">
+    LeakyReLU — Mode Collapse: By epoch 3, D loss hit ~0.001 and G loss shot to ~39, flatlined near 44 for the remaining 47 epochs. The discriminator correctly identified every fake, leaving the generator with no useful gradient signal. Every output became a uniform gray blob.
+  </div>
+  <div class="highlight-box" style="margin-top:8px;">
+    ReLU — Stable Training: After an initial collapse (epochs 1–12), the model recovered into a healthy equilibrium. G loss settled ~3.5–5.0 and D loss oscillated 0.1–1.0 — the competitive back-and-forth GANs need to keep both networks improving.
+  </div>
+
+  <hr/>
+
+  <!-- ── DISCUSSION ── -->
+  <h2>Discussion</h2>
+
+  <h3>Why VAEs over Basic Autoencoders for Generation?</h3>
+  <p>A basic autoencoder learns a compressed representation with no constraints on latent space structure. Randomly sampling points produces garbage because the decoder has only been trained on specific encoded inputs — there is no guarantee the space between them is meaningful. VAEs fix this with KL regularization, which pushes the encoder to map all inputs toward a smooth N(0,I) Gaussian. Any random point from that distribution decodes to something plausible. The tradeoff is slightly blurrier reconstructions due to the enforced smoothness.</p>
+
+  <h3>Mode Collapse in GANs</h3>
+  <p>Mode collapse occurs when the discriminator overpowers the generator. In the LeakyReLU experiment, D loss hit ~0 by epoch 3, meaning the discriminator classified every real image as real and every fake as fake with near-certainty. The generator received vanishing gradients and all outputs converged to the same gray blob. Warning signs: D loss → 0, G loss → large constant, generated images identical regardless of input noise.</p>
+
+  <h3>Dataset Size and GAN Stability</h3>
+  <p>The counterintuitive ReLU result highlights how GAN hyperparameters are sensitive to dataset size. With only 1,638 images, the discriminator memorized real data almost instantly. LeakyReLU's non-zero negative gradient made it maximally expressive, crushing the generator. The "dying ReLU" effect accidentally weakened the discriminator just enough to maintain balance — acting as an unintentional regularizer on a small dataset. Techniques for small-dataset GANs such as differentiable augmentation or spectral normalization would likely improve results significantly.</p>
+
+  <h3>References</h3>
+  <ul>
+    <li>Kingma &amp; Welling (2013) — <em>Auto-Encoding Variational Bayes</em></li>
+    <li>Radford et al. (2015) — <em>Unsupervised Representation Learning with Deep Convolutional Generative Adversarial Networks</em></li>
+    <li>VAE Tutorial — medium.com/@rekalantar</li>
+    <li>DCGAN Reference — d2l.ai Chapter on GANs</li>
+  </ul>
+
+</div>
+</body>
+</html>
