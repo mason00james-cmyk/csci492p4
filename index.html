@@ -234,25 +234,25 @@
 
   <p><strong>latent_dim = 2</strong> — Blurry and imprecise. Only 2 values must encode all digit variation, so fine stroke detail is lost. Rough shapes are preserved but characters are hard to read.</p>
   <div class="img-block">
-    <img src="outputs/ae/reconstruction_latent2.png" alt="AE Reconstruction latent=2"/>
+    <img src="reconstruction_latent2.png" alt="AE Reconstruction latent=2"/>
     <div class="img-caption">Fig 1. AE Reconstruction with latent_dim=2.</div>
   </div>
 
   <p><strong>latent_dim = 8</strong> — Noticeably sharper. Stroke thickness and digit curvature are preserved well across most examples.</p>
   <div class="img-block">
-    <img src="outputs/ae/reconstruction_latent8.png" alt="AE Reconstruction latent=8"/>
+    <img src="reconstruction_latent8.png" alt="AE Reconstruction latent=8"/>
     <div class="img-caption">Fig 2. AE Reconstruction with latent_dim=8.</div>
   </div>
 
   <p><strong>latent_dim = 32</strong> — Near-perfect. Reconstructions are almost indistinguishable from originals, with fine pen strokes faithfully reproduced.</p>
   <div class="img-block">
-    <img src="outputs/ae/reconstruction_latent32.png" alt="AE Reconstruction latent=32"/>
+    <img src="reconstruction_latent32.png" alt="AE Reconstruction latent=32"/>
     <div class="img-caption">Fig 3. AE Reconstruction with latent_dim=32.</div>
   </div>
 
   <h3>Training Loss</h3>
   <div class="img-block">
-    <img src="outputs/ae/loss_curves.png" alt="AE Loss Curves"/>
+    <img src="loss_curves (1).png" alt="AE Loss Curves"/>
     <div class="img-caption">Fig 4. BCE training loss over 20 epochs for latent dims 2, 8, and 32. All models converge quickly within the first 2–3 epochs and plateau.</div>
   </div>
 
@@ -272,11 +272,11 @@
 
   <div class="img-row cols-2">
     <div class="img-block">
-      <img src="outputs/ae/samples_latent8.png" alt="AE Samples latent=8"/>
+      <img src="samples_latent8.png" alt="AE Samples latent=8"/>
       <div class="img-caption">Fig 5. Random samples, latent_dim=8. Noisy and unrecognizable.</div>
     </div>
     <div class="img-block">
-      <img src="outputs/ae/samples_latent32.png" alt="AE Samples latent=32"/>
+      <img src="samples_latent32.png" alt="AE Samples latent=32"/>
       <div class="img-caption">Fig 6. Random samples, latent_dim=32. Even worse — larger space means random points are less likely to land anywhere meaningful.</div>
     </div>
   </div>
@@ -298,7 +298,7 @@
 
   <h3>Training Loss</h3>
   <div class="img-block">
-    <img src="outputs/vae/loss_curves.png" alt="VAE Loss Curves"/>
+    <img src="loss_curves.png" alt="VAE Loss Curves"/>
     <div class="img-caption">Fig 7. VAE training loss — Total ELBO, BCE reconstruction, and KL divergence over 20 epochs.</div>
   </div>
 
@@ -317,7 +317,7 @@
 
   <h3>Random Samples</h3>
   <div class="img-block">
-    <img src="outputs/vae/samples_latent2.png" alt="VAE Samples"/>
+    <img src="samples_latent2.png" alt="VAE Samples"/>
     <div class="img-caption">Fig 8. 64 random samples decoded from z ~ N(0,I). All produce clear, recognizable digits — a direct result of KL regularization structuring the latent space.</div>
   </div>
 
@@ -326,11 +326,11 @@
 
   <div class="img-row cols-2">
     <div class="img-block">
-      <img src="outputs/vae/latent_grid_1p0.png" alt="VAE Latent Grid ±1.0"/>
+      <img src="latent_grid_1p0.png" alt="VAE Latent Grid ±1.0"/>
       <div class="img-caption">Fig 9. Latent grid, range ±1.0 — smooth transitions between recognizable digit classes throughout.</div>
     </div>
     <div class="img-block">
-      <img src="outputs/vae/latent_grid_5p0.png" alt="VAE Latent Grid ±5.0"/>
+      <img src="latent_grid_5p0.png" alt="VAE Latent Grid ±5.0"/>
       <div class="img-caption">Fig 10. Latent grid, range ±5.0 — center stays sharp; extreme edges become blurry/distorted.</div>
     </div>
   </div>
@@ -381,21 +381,21 @@
 
   <h3>Training Progression — ReLU Discriminator</h3>
   <div class="img-block">
-    <img src="outputs/dcgan/progression_relu.png" alt="DCGAN ReLU Progression"/>
+    <img src="progression_relu.png" alt="DCGAN ReLU Progression"/>
     <div class="img-caption">Fig 11. Generated samples at epochs 1, 5, 10, 20, 30, 40, 50 (ReLU discriminator). From random noise → color blobs → structured Pokémon-like shapes.</div>
   </div>
 
   <div class="img-row cols-3">
     <div class="img-block">
-      <img src="outputs/dcgan/samples/relu_epoch030.png" alt="Epoch 30"/>
+      <img src="relu_epoch030.png" alt="Epoch 30"/>
       <div class="img-caption">Fig 12. Epoch 30 — color and shape structure emerging.</div>
     </div>
     <div class="img-block">
-      <img src="outputs/dcgan/samples/relu_epoch045.png" alt="Epoch 45"/>
+      <img src="relu_epoch045.png" alt="Epoch 45"/>
       <div class="img-caption">Fig 13. Epoch 45 — more defined forms.</div>
     </div>
     <div class="img-block">
-      <img src="outputs/dcgan/samples/relu_epoch050.png" alt="Epoch 50"/>
+      <img src="relu_epoch050.png" alt="Epoch 50"/>
       <div class="img-caption">Fig 14. Epoch 50 — Pokémon-like colors and silhouettes.</div>
     </div>
   </div>
@@ -407,17 +407,17 @@
 
   <h3>Loss Curves</h3>
   <div class="img-block">
-    <img src="outputs/dcgan/loss_comparison.png" alt="Loss Comparison"/>
+    <img src="loss_comparison.png" alt="Loss Comparison"/>
     <div class="img-caption">Fig 15. Side-by-side loss curves. LeakyReLU (left): discriminator collapses immediately, generator flatlines. ReLU (right): losses stabilize into a healthy adversarial equilibrium.</div>
   </div>
 
   <div class="img-row cols-2">
     <div class="img-block">
-      <img src="outputs/dcgan/loss_curves_leaky.png" alt="Leaky Loss"/>
+      <img src="loss_curves_leaky.png" alt="Leaky Loss"/>
       <div class="img-caption">Fig 16. LeakyReLU — D loss → ~0, G loss → ~44 and never recovers.</div>
     </div>
     <div class="img-block">
-      <img src="outputs/dcgan/loss_curves_relu.png" alt="ReLU Loss"/>
+      <img src="loss_curves_relu.png" alt="ReLU Loss"/>
       <div class="img-caption">Fig 17. ReLU — initial spike then convergence to stable equilibrium around epoch 18.</div>
     </div>
   </div>
@@ -425,11 +425,11 @@
   <h3>Visual Comparison</h3>
   <div class="img-row cols-2">
     <div class="img-block">
-      <img src="outputs/dcgan/progression_leaky.png" alt="Leaky Progression"/>
+      <img src="progression_leaky.png" alt="Leaky Progression"/>
       <div class="img-caption">Fig 18. LeakyReLU progression — uniform gray noise from epoch 1 through 50. Complete mode collapse.</div>
     </div>
     <div class="img-block">
-      <img src="outputs/dcgan/progression_relu.png" alt="ReLU Progression"/>
+      <img src="progression_relu.png" alt="ReLU Progression"/>
       <div class="img-caption">Fig 19. ReLU progression — gradual improvement from noise to structured Pokémon imagery.</div>
     </div>
   </div>
@@ -476,3 +476,4 @@
 </div>
 </body>
 </html>
+
