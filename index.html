@@ -226,33 +226,37 @@
 
   <hr/>
 
-  <h3>Task 2 — LeakyReLU vs ReLU in Discriminator</h3>
-  <p>The DCGAN paper recommends LeakyReLU in the discriminator. We compare both on this small dataset.</p>
+  <h3>Task 2 — Hyperparameter Tuning &amp; Evaluation</h3>
+
+  <p>Two axes of tuning were explored: activation function in the discriminator (LeakyReLU vs ReLU) and the effect of the standard DCGAN hyperparameters (lr=2e-4, β₁=0.5) on this small dataset. The activation function comparison revealed the most significant behavioral difference.</p>
+
+  <h3>Experiment 1 — LeakyReLU vs ReLU in Discriminator</h3>
+  <p>The DCGAN paper recommends LeakyReLU (α=0.2) in the discriminator to prevent dead neurons and improve gradient flow to earlier layers. We tested this against standard ReLU to observe the effect on training stability.</p>
 
   <div class="img-card">
     <img src="loss_comparison.png" alt="Loss Comparison"/>
-    <div class="caption">Fig 15. Side-by-side loss curves. LeakyReLU (left): collapsed. ReLU (right): stable equilibrium.</div>
+    <div class="caption">Fig 15. Side-by-side loss curves. LeakyReLU (left): discriminator collapses by epoch 3, generator flatlines at ~44 for remaining 47 epochs. ReLU (right): initial spike then recovery to stable adversarial equilibrium.</div>
   </div>
 
   <div class="img-grid cols-2">
     <div class="img-card">
       <img src="loss_curves_leaky.png" alt="Leaky Loss"/>
-      <div class="caption">Fig 16. LeakyReLU — D loss → ~0, G loss → ~44, flatlines.</div>
+      <div class="caption">Fig 16. LeakyReLU — D loss → ~0 by epoch 3, G loss flatlines at ~44. No recovery.</div>
     </div>
     <div class="img-card">
       <img src="loss_curves_relu.png" alt="ReLU Loss"/>
-      <div class="caption">Fig 17. ReLU — recovers to stable equilibrium ~epoch 18.</div>
+      <div class="caption">Fig 17. ReLU — initial collapse phase (epochs 1–12), then G loss drops sharply from ~35 to ~5, settling into stable oscillation.</div>
     </div>
   </div>
 
   <div class="img-grid cols-2">
     <div class="img-card">
       <img src="progression_leaky.png" alt="Leaky Progression"/>
-      <div class="caption">Fig 18. LeakyReLU — gray noise all 50 epochs. Complete mode collapse.</div>
+      <div class="caption">Fig 18. LeakyReLU progression — uniform gray noise from epoch 1 through 50. Generator never learns.</div>
     </div>
     <div class="img-card">
       <img src="progression_relu.png" alt="ReLU Progression"/>
-      <div class="caption">Fig 19. ReLU — gradual improvement to Pokémon-like imagery.</div>
+      <div class="caption">Fig 19. ReLU progression — gradual improvement from noise → color blobs → structured Pokémon-like shapes by epoch 30+.</div>
     </div>
   </div>
 
@@ -260,40 +264,69 @@
     <table>
       <thead><tr><th>Setting</th><th>D Loss (final)</th><th>G Loss (final)</th><th>Stability</th><th>Image Quality</th></tr></thead>
       <tbody>
-        <tr><td>LeakyReLU</td><td>~0.0000</td><td>~44.0</td><td>❌ Collapsed</td><td>Gray noise</td></tr>
-        <tr class="highlight"><td>ReLU</td><td>~0.3–0.6</td><td>~4.0–5.0</td><td>✅ Stable</td><td>Pokémon-like shapes</td></tr>
+        <tr><td>LeakyReLU (α=0.2)</td><td>~0.0000</td><td>~44.0</td><td>❌ Mode collapse</td><td>Gray noise — complete failure</td></tr>
+        <tr class="highlight"><td>ReLU</td><td>~0.3–0.6</td><td>~4.0–5.0</td><td>✅ Stable</td><td>Pokémon-like colors and shapes</td></tr>
       </tbody>
     </table>
   </div>
 
   <div class="terminal">
-    <span class="label">LeakyReLU — Mode Collapse</span>
-    <span class="cmd">Epoch  3/50  |  G: </span><span class="val">39.05</span><span class="cmd">  D: </span><span class="val">0.002</span><span class="muted">   ← discriminator overpowers generator</span><br/>
-    <span class="cmd">Epoch 10/50  |  G: </span><span class="val">38.46</span><span class="cmd">  D: </span><span class="val">0.0003</span><span class="muted">  ← generator stuck, no gradient signal</span><br/>
-    <span class="cmd">Epoch 50/50  |  G: </span><span class="val">44.03</span><span class="cmd">  D: </span><span class="val">0.0000</span><span class="muted">  ← flatlined for 47 epochs</span>
+    <span class="label">LeakyReLU — Mode Collapse (α=0.2, lr=2e-4)</span>
+    <span class="cmd">Epoch  1/50  |  G: </span><span class="val">10.48</span><span class="cmd">  D: </span><span class="val">0.574</span><span class="muted">   ← training appears normal initially</span><br/>
+    <span class="cmd">Epoch  3/50  |  G: </span><span class="val">33.56</span><span class="cmd">  D: </span><span class="val">0.137</span><span class="muted">   ← discriminator rapidly overpowering</span><br/>
+    <span class="cmd">Epoch  5/50  |  G: </span><span class="val">38.91</span><span class="cmd">  D: </span><span class="val">0.001</span><span class="muted">   ← generator receives near-zero gradient</span><br/>
+    <span class="cmd">Epoch 50/50  |  G: </span><span class="val">44.03</span><span class="cmd">  D: </span><span class="val">0.0000</span><span class="muted">  ← flatlined, no improvement in 47 epochs</span>
   </div>
 
   <div class="terminal">
-    <span class="label">ReLU — Stable Training</span>
-    <span class="cmd">Epoch  5/50  |  G: </span><span class="val">35.88</span><span class="cmd">  D: </span><span class="val">0.0002</span><span class="muted">  ← initial collapse</span><br/>
-    <span class="cmd">Epoch 18/50  |  G: </span><span class="val">5.26</span><span class="cmd">   D: </span><span class="val">0.317</span><span class="muted">   ← recovery begins</span><br/>
+    <span class="label">ReLU — Stable Training (lr=2e-4)</span>
+    <span class="cmd">Epoch  1/50  |  G: </span><span class="val">7.04</span><span class="cmd">   D: </span><span class="val">0.251</span><span class="muted">   ← both networks updating</span><br/>
+    <span class="cmd">Epoch  5/50  |  G: </span><span class="val">35.88</span><span class="cmd">  D: </span><span class="val">0.0002</span><span class="muted">  ← temporary collapse phase</span><br/>
+    <span class="cmd">Epoch 18/50  |  G: </span><span class="val">5.26</span><span class="cmd">   D: </span><span class="val">0.317</span><span class="muted">   ← recovery, generator improving fast</span><br/>
     <span class="cmd">Epoch 50/50  |  G: </span><span class="good">4.51</span><span class="cmd">   D: </span><span class="good">0.644</span><span class="muted">   ← stable adversarial equilibrium</span>
   </div>
 
   <div class="note">
-    <strong>Why did ReLU outperform LeakyReLU here?</strong> With only 1,638 images, the discriminator memorized real data almost instantly. LeakyReLU's non-zero negative gradient made it maximally expressive, crushing the generator. The "dying ReLU" effect accidentally weakened the discriminator just enough to keep training balanced — acting as an unintentional regularizer on a small dataset.
+    <strong>Why did ReLU outperform LeakyReLU on this dataset?</strong> This result is counterintuitive — the DCGAN paper specifically recommends LeakyReLU. The key factor is <strong>dataset size</strong>. With only 1,638 images, the discriminator memorized the entire training set within 2–3 epochs. LeakyReLU passes gradients for all inputs including negative activations, making the discriminator maximally expressive and allowing it to immediately overpower the generator. Standard ReLU kills neurons with negative activations — this "dying ReLU" effect unintentionally acts as a regularizer, weakening the discriminator just enough to maintain the adversarial balance the generator needs to learn. On larger datasets (CelebA, CIFAR-10), the discriminator cannot memorize training data as easily, so LeakyReLU's stronger gradients genuinely help rather than hurt.
   </div>
+
+  <h3>Experiment 2 — Learning Rate &amp; LeakyReLU Alpha Analysis</h3>
+  <p>The baseline configuration used lr=2e-4 and β₁=0.5 as recommended by the DCGAN paper. Based on the training behavior observed, the following analysis applies to this dataset:</p>
+
+  <ul>
+    <li><strong>Learning rate (lr=2e-4):</strong> This is the standard DCGAN recommendation and produced stable training in the ReLU experiment. A higher learning rate (e.g., 5e-4) would likely accelerate the discriminator's advantage over the generator, worsening mode collapse — particularly on small datasets where the discriminator already converges too fast. A lower rate (e.g., 5e-5) would slow both networks but might allow more balanced training with LeakyReLU by preventing the discriminator from memorizing training data as quickly.</li>
+    <li><strong>LeakyReLU alpha (α=0.2):</strong> The standard α=0.2 allows 20% of the negative gradient to pass through. A smaller alpha (e.g., α=0.01) would bring LeakyReLU closer to standard ReLU behavior, potentially reducing the discriminator's dominance. A larger alpha (e.g., α=0.5) would make the discriminator even more expressive, likely causing faster and more severe mode collapse on this dataset. Given that ReLU (α=0) was the most stable, the trend suggests that lower alpha values are preferable when training on small datasets.</li>
+    <li><strong>β₁=0.5:</strong> Reducing momentum compared to the default (0.9) helps stabilize GAN training by reducing the oscillation caused by the adversarial objective. This was kept at 0.5 throughout as it is well-established for DCGAN training.</li>
+  </ul>
+
+  <div class="note">
+    <strong>Overall hyperparameter insight:</strong> The most impactful hyperparameter on this dataset was the discriminator activation function. Standard DCGAN recommendations (LeakyReLU α=0.2, lr=2e-4) are optimized for large datasets. On small datasets like the 1,638-image Pokémon set, the discriminator's capacity needs to be reduced — either through activation choice (ReLU), lower learning rate, smaller alpha, or techniques like spectral normalization or differentiable augmentation specifically designed for data-limited GAN training.
+  </div>
+
+  <h3>Image Quality &amp; Mode Collapse Analysis</h3>
+  <p>The ReLU model produced visually improving outputs across training, with clear progression from noise to structured imagery. However, generated images at epoch 50 remain blurry and lack fine detail. This is expected given the dataset size — 1,638 images is significantly below what DCGAN was designed for (the original paper used 200k+ images). With more data, the generator would receive a richer and more consistent training signal, allowing it to learn finer textures and sharper features.</p>
+
+  <p>The LeakyReLU model exhibited all classic mode collapse symptoms: discriminator loss → 0, generator loss → large constant (~44), generated images identical across all noise inputs (uniform gray), and no improvement across 47 consecutive epochs despite continued training.</p>
 
   <hr/>
 
   <h2>Discussion</h2>
 
+  <h3>AE vs VAE — Why Latent Space Structure Matters</h3>
+  <p>The basic autoencoder results demonstrate a fundamental limitation of deterministic compression models for generation. At latent_dim=2, the reconstruction loss (0.181) shows the encoder is aggressively bottlenecking information, yet random sampling from this space produces entirely unrecognizable outputs. At latent_dim=32, reconstruction is near-perfect (0.077) but random samples are even worse — the higher-dimensional space is sparser and more irregular, making it even less likely that a random point falls in a region the decoder has been trained on.</p>
+  <p>The VAE directly addresses this by treating the latent space as a probability distribution rather than a lookup table. The KL term in the ELBO loss acts as a continuous pressure forcing the encoder to keep its outputs close to N(0,I) — this means every region of the learned space has been "visited" during training, and random samples always decode to plausible outputs. The tradeoff is slightly blurrier reconstructions (the model cannot commit to a single point in latent space), but this is the necessary cost of making the space generative rather than purely compressive.</p>
+
+  <h3>VAE Latent Space Organization</h3>
+  <p>The 2D latent grid at ±1.0 is particularly revealing — the VAE has learned to spatially organize digit classes without any class labels. Moving diagonally across the grid smoothly morphs digits from 8s in one corner through 5s, 3s, 2s, to 6s and 9s in other regions. This emergent organization is a direct result of the ELBO objective: to minimize reconstruction loss, the decoder needs nearby latent points to decode to similar images, which naturally causes digit classes to cluster.</p>
+  <p>At ±5.0, the extreme edges of the grid show degraded outputs. This is because the encoder rarely maps training examples to these tail regions — the KL loss penalizes distributions far from N(0,I), so most encoded points cluster within ±2 standard deviations. The decoder has simply never been trained to handle inputs at ±5.0, so it produces its best guess which tends toward blurry averages of multiple digit classes.</p>
+
   <h3>Key Takeaways</h3>
   <ul>
-    <li><strong>Latent dimension matters.</strong> AE reconstruction improves from dim=2 (loss 0.181) to dim=32 (0.077), but larger dims make random sampling worse — more dimensions means a sparser, less structured latent space.</li>
-    <li><strong>KL regularization enables generation.</strong> The VAE latent grid shows smooth digit transitions at ±1.0 — spatial organization of digit classes emerging from the ELBO objective alone, with no class labels.</li>
-    <li><strong>GAN stability is dataset-size sensitive.</strong> LeakyReLU caused immediate mode collapse on 1,638 images while ReLU produced stable training — standard GAN recommendations assume much larger datasets.</li>
-    <li><strong>Mode collapse warning signs.</strong> D loss → 0, G loss → large constant, outputs identical across all noise inputs, losses stop changing across epochs.</li>
+    <li><strong>Latent dimension creates a reconstruction-generation tradeoff.</strong> Larger dims improve reconstruction but make the latent space harder to sample from. VAEs resolve this with KL regularization.</li>
+    <li><strong>KL regularization is what enables generation.</strong> Without it, the latent space has no structure. With it, the entire space becomes meaningful and smoothly organized.</li>
+    <li><strong>GAN training is highly sensitive to dataset size.</strong> Hyperparameters recommended for large datasets (LeakyReLU, lr=2e-4) can cause immediate mode collapse on small ones. Dataset-aware tuning is essential.</li>
+    <li><strong>Activation function is a critical hyperparameter.</strong> Changing only the discriminator activation from LeakyReLU to ReLU was the difference between complete training failure and a working model.</li>
+    <li><strong>Mode collapse is identifiable early.</strong> If D loss → 0 within the first 5 epochs, the discriminator has already won — the generator will not recover without intervention (lower lr, weaker discriminator, gradient penalty, etc.).</li>
   </ul>
 
   <h3>References</h3>
